@@ -73,4 +73,6 @@ router.post("/login", [
         .trim()
         .isLength({ min: 8 }),
 ], authController.login);
+router.post("/google", authController.googleAuthentication);
+router.post("/verify-token", authController.verifyJWTToken);
 exports.default = router;

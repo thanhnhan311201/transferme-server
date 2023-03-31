@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.genRandomString = exports.ResponseError = exports.catchAsync = exports.catchSync = void 0;
+exports.genRandomName = exports.ResponseError = exports.catchAsync = exports.catchSync = void 0;
 const catchSync = (fn, ...args) => {
     try {
         const result = fn(args);
@@ -38,8 +38,8 @@ class ResponseError extends Error {
     }
 }
 exports.ResponseError = ResponseError;
-const genRandomString = (length) => {
-    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+const genRandomName = (length) => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*_";
     const charLength = chars.length;
     let result = "";
     for (let i = 0; i < length; i++) {
@@ -47,4 +47,4 @@ const genRandomString = (length) => {
     }
     return result;
 };
-exports.genRandomString = genRandomString;
+exports.genRandomName = genRandomName;

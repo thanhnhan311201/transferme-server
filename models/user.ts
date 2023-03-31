@@ -19,6 +19,10 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+  provider: {
+    type: String,
+    required: true,
+  },
 });
 
 export default mongoose.model("User", userSchema);

@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export const catchSync = <Fn extends (...args: any) => any>(
   fn: Fn,
   ...args: Parameters<Fn>
@@ -28,9 +30,9 @@ export class ResponseError extends Error {
   }
 }
 
-export const genRandomString = (length: number) => {
+export const genRandomName = (length: number) => {
   const chars =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*_";
   const charLength = chars.length;
   let result = "";
   for (let i = 0; i < length; i++) {
@@ -39,3 +41,17 @@ export const genRandomString = (length: number) => {
 
   return result;
 };
+
+export interface IUserModel {
+  _id?: mongoose.Types.ObjectId;
+  email: string;
+  name: string;
+  password: string;
+  picture: string;
+  provider: string;
+}
+
+export interface IJWT {
+  userId: string;
+  email: string;
+}

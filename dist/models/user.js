@@ -22,5 +22,9 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
+    provider: {
+        type: String,
+        required: true,
+    },
 });
 exports.default = mongoose_1.default.model("User", userSchema);

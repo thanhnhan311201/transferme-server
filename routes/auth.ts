@@ -49,4 +49,8 @@ router.post(
   authController.login
 );
 
+router.post("/google", authController.googleAuthentication);
+
+router.post("/verify-token", authController.verifyJWTToken);
+
 export default router;

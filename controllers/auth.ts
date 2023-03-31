@@ -1,17 +1,30 @@
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
-import jwt from "jsonwebtoken";
+import jwt, { type JwtPayload } from "jsonwebtoken";
 import type { RequestHandler } from "express";
 import { validationResult } from "express-validator";
 import dotenv from "dotenv";
+import { auth, OAuth2Client, type Credentials } from "google-auth-library";
 
-dotenv.config()
+dotenv.config();
 
 import User from "../models/user";
 
-import { ResponseError, genRandomString } from "../utils/help";
-import { SECRET_JWT_KEY } from "../utils/config";
+import { ResponseError, genRandomName, IUserModel } from "../utils/help";
+import {
+  SECRET_JWT_KEY,
+  GOOGLE_CREDENTIAL_CLIENT_ID,
+  GOOGLE_CREDENTIAL_CLIENT_SECRET,
+  GOOGLE_REDIRECT_URI,
+} from "../utils/config";
+import { IJWT } from "../utils/help";
+
+const client = new OAuth2Client(
+  GOOGLE_CREDENTIAL_CLIENT_ID,
+  GOOGLE_CREDENTIAL_CLIENT_SECRET,
+  GOOGLE_REDIRECT_URI
+);
 
 export const signup: RequestHandler = async (req, res, next) => {
   try {
@@ -31,18 +44,13 @@ export const signup: RequestHandler = async (req, res, next) => {
     const user = new User({
       email: email,
       password: hashPassword,
-      name: genRandomString(12),
+      name: genRandomName(12),
       picture: "/images/user.png",
+      provider: "transferme",
     });
     const result = await user.save();
     res.status(201).json({
       message: "User signup successfully!",
-      user: {
-        email: result.email,
-        id: result._id,
-        name: result.name,
-        picture: result.picture,
-      },
     });
   } catch (error: ResponseError | any) {
     if (!error.status) {
@@ -95,6 +103,117 @@ export const login: RequestHandler = async (req, res, next) => {
         },
       });
     }
+  } catch (error: ResponseError | any) {
+    if (!error.status) {
+      error.status = 500;
+    }
+    next(error);
+  }
+};
+
+export const googleAuthentication: RequestHandler = async (req, res, next) => {
+  try {
+    const authCode = req.body.authCode;
+
+    const { tokens }: { tokens: Credentials; res: any } = await client.getToken(
+      authCode
+    );
+    const ticket = await client.verifyIdToken({
+      idToken: tokens.id_token!,
+      audience: GOOGLE_CREDENTIAL_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload) {
+      const err = new ResponseError("User not found", 401);
+      throw err;
+    } else {
+      const user = await User.findOne({ email: payload.email });
+      if (!user) {
+        const user = new User({
+          email: payload.email,
+          password: bcrypt.hashSync(genRandomName(8), 12),
+          name: payload.name,
+          picture: payload.picture,
+          provider: "google",
+        });
+        const result = await user.save();
+        const token = jwt.sign(
+          {
+            email: result.email,
+            userId: result._id.toString(),
+          },
+          SECRET_JWT_KEY,
+          { expiresIn: "1h" }
+        );
+        res.status(200).json({
+          token: token,
+          user: {
+            email: result.email,
+            id: result._id,
+            name: result.name,
+            picture: result.picture,
+          },
+        });
+      } else {
+        user.email = payload.email!;
+        user.name = payload.name!;
+        user.picture = payload.picture!;
+        const result = await user.save();
+        const token = jwt.sign(
+          {
+            email: result.email,
+            userId: result._id.toString(),
+          },
+          SECRET_JWT_KEY,
+          { expiresIn: "1h" }
+        );
+        res.status(200).json({
+          token: token,
+          user: {
+            email: result.email,
+            id: result._id,
+            name: result.name,
+            picture: result.picture,
+          },
+        });
+      }
+    }
+  } catch (error: ResponseError | any) {
+    if (!error.status) {
+      error.status = 500;
+    }
+    next(error);
+  }
+};
+
+export const verifyJWTToken: RequestHandler = async (req, res, next) => {
+  try {
+    const token: string = req.body.token;
+    if (!token) {
+      res.status(401).json({ message: "Not authenticated." });
+    }
+
+    const decodedToken = jwt.verify(token, SECRET_JWT_KEY) as JwtPayload;
+    if (!decodedToken) {
+      res.status(401).json({ message: "Not authenticated." });
+    }
+
+    const user = await User.findOne({ _id: decodedToken.userId });
+    if (!user) {
+      const err = new ResponseError("User not found!", 401);
+      throw err;
+    }
+
+    res.status(200).json({
+      message: "authenticated",
+      user: {
+        email: user.email,
+        id: user._id,
+        name: user.name,
+        picture: user.picture,
+      },
+    });
   } catch (error: ResponseError | any) {
     if (!error.status) {
       error.status = 500;
