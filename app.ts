@@ -35,8 +35,12 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 });
 
 (async () => {
-  await mongoose.connect(process.env.MONGODB_URI as string);
-  app.listen(port, () => {
-    console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
-  });
+  try {
+    await mongoose.connect(process.env.MONGODB_URI as string);
+    app.listen(port, () => {
+      console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
+    });
+  } catch (error) {
+    console.log(error);
+  }
 })();

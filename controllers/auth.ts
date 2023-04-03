@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
-import jwt, { type JwtPayload } from "jsonwebtoken";
+import jwt, { Jwt, type JwtPayload } from "jsonwebtoken";
 import type { RequestHandler } from "express";
 import { validationResult } from "express-validator";
 import dotenv from "dotenv";
@@ -51,6 +51,8 @@ export const signup: RequestHandler = async (req, res, next) => {
     const result = await user.save();
     res.status(201).json({
       message: "User signup successfully!",
+      status: "success",
+      code: 201,
     });
   } catch (error: ResponseError | any) {
     if (!error.status) {
@@ -94,6 +96,9 @@ export const login: RequestHandler = async (req, res, next) => {
         { expiresIn: "1h" }
       );
       res.status(200).json({
+        status: "success",
+        code: 200,
+        message: "Login successfully!",
         token: token,
         user: {
           email: user.email,
@@ -147,6 +152,9 @@ export const googleAuthentication: RequestHandler = async (req, res, next) => {
           { expiresIn: "1h" }
         );
         res.status(200).json({
+          status: "success",
+          code: 200,
+          message: "Login successfully!",
           token: token,
           user: {
             email: result.email,
@@ -169,6 +177,9 @@ export const googleAuthentication: RequestHandler = async (req, res, next) => {
           { expiresIn: "1h" }
         );
         res.status(200).json({
+          status: "success",
+          code: 200,
+          message: "Login successfully!",
           token: token,
           user: {
             email: result.email,
@@ -188,25 +199,37 @@ export const googleAuthentication: RequestHandler = async (req, res, next) => {
 };
 
 export const verifyJWTToken: RequestHandler = async (req, res, next) => {
+  const token: string = req.body.token;
+  if (!token) {
+    return res
+      .status(401)
+      .json({ status: "error", code: 401, message: "Not authenticated." });
+  }
+
+  let decodedToken: JwtPayload | undefined;
   try {
-    const token: string = req.body.token;
-    if (!token) {
-      res.status(401).json({ message: "Not authenticated." });
-    }
+    decodedToken = jwt.verify(token, SECRET_JWT_KEY) as JwtPayload;
+  } catch (error) {
+    const err = new ResponseError("Not authenticated.", 401);
+    next(error);
+  }
+  if (!decodedToken) {
+    return res
+      .status(401)
+      .json({ status: "error", code: 401, message: "Not authenticated." });
+  }
 
-    const decodedToken = jwt.verify(token, SECRET_JWT_KEY) as JwtPayload;
-    if (!decodedToken) {
-      res.status(401).json({ message: "Not authenticated." });
-    }
-
+  try {
     const user = await User.findOne({ _id: decodedToken.userId });
     if (!user) {
       const err = new ResponseError("User not found!", 401);
       throw err;
     }
 
-    res.status(200).json({
-      message: "authenticated",
+    return res.status(200).json({
+      status: "success",
+      code: 200,
+      message: "Authenticated.",
       user: {
         email: user.email,
         id: user._id,
