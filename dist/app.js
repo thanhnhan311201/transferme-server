@@ -18,6 +18,7 @@ const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
 const body_parser_1 = __importDefault(require("body-parser"));
+const socket_io_1 = require("socket.io");
 const auth_1 = __importDefault(require("./routes/auth"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -37,8 +38,25 @@ app.use((err, req, res, next) => {
     res.status(status).json(Object.assign({ message: message }, (data && { data })));
 });
 (() => __awaiter(void 0, void 0, void 0, function* () {
-    yield mongoose_1.default.connect(process.env.MONGODB_URI);
-    app.listen(port, () => {
-        console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
-    });
+    try {
+        yield mongoose_1.default.connect(process.env.MONGODB_URI);
+        const server = app.listen(port, () => {
+            console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
+        });
+        const io = new socket_io_1.Server(server, {
+            cors: {
+                origin: "http://localhost:3000",
+                methods: ["GET", "PUT", "POST", "DELETE", "OPTIONs"],
+                allowedHeaders: ["Content-Type", "Authorization"],
+            },
+        });
+        io.engine.generateId;
+        io.on("connection", (socket) => {
+            console.log(socket.id);
+            console.log(io.of("/").sockets.size);
+        });
+    }
+    catch (error) {
+        console.log(error);
+    }
 }))();

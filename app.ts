@@ -4,9 +4,9 @@ import mongoose from "mongoose";
 import express, { Express, NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { OAuth2Client } from "google-auth-library";
-import jwt from "jsonwebtoken";
 import bodyParser from "body-parser";
+import io, { Server } from "socket.io";
+import uuid from "uuid";
 
 import authRoutes from "./routes/auth";
 
@@ -37,8 +37,20 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 (async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI as string);
-    app.listen(port, () => {
+    const server = app.listen(port, () => {
       console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
+    });
+    const io = new Server(server, {
+      cors: {
+        origin: "http://localhost:3000",
+        methods: ["GET", "PUT", "POST", "DELETE", "OPTIONs"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+      },
+    });
+    io.engine.generateId;
+    io.on("connection", (socket) => {
+      console.log(socket.id);
+      console.log(io.of("/").sockets.size);
     });
   } catch (error) {
     console.log(error);

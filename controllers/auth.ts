@@ -11,14 +11,13 @@ dotenv.config();
 
 import User from "../models/user";
 
-import { ResponseError, genRandomName, IUserModel } from "../utils/help";
+import { ResponseError, genRandomName } from "../utils/help";
 import {
   SECRET_JWT_KEY,
   GOOGLE_CREDENTIAL_CLIENT_ID,
   GOOGLE_CREDENTIAL_CLIENT_SECRET,
   GOOGLE_REDIRECT_URI,
 } from "../utils/config";
-import { IJWT } from "../utils/help";
 
 const client = new OAuth2Client(
   GOOGLE_CREDENTIAL_CLIENT_ID,

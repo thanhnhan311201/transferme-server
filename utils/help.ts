@@ -1,5 +1,3 @@
-import mongoose from "mongoose";
-
 export const catchSync = <Fn extends (...args: any) => any>(
   fn: Fn,
   ...args: Parameters<Fn>
@@ -41,17 +39,3 @@ export const genRandomName = (length: number) => {
 
   return result;
 };
-
-export interface IUserModel {
-  _id?: mongoose.Types.ObjectId;
-  email: string;
-  name: string;
-  password: string;
-  picture: string;
-  provider: string;
-}
-
-export interface IJWT {
-  userId: string;
-  email: string;
-}
