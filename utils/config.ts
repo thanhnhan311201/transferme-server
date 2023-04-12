@@ -5,3 +5,6 @@ export const GOOGLE_CREDENTIAL_CLIENT_ID = process.env
 export const GOOGLE_CREDENTIAL_CLIENT_SECRET = process.env
   .GOOGLE_CREDENTIAL_CLIENT_SECRET as string;
 export const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI as string;
+
+export const TOKEN_EXPIRATION_TIME = process.env
+  .TOKEN_EXPIRATION_TIME as string;

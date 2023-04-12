@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import jwt, { Jwt } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { type JwtPayload } from "jsonwebtoken";
 
 import { ResponseError } from "../utils/help";

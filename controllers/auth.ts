@@ -17,6 +17,7 @@ import {
   GOOGLE_CREDENTIAL_CLIENT_ID,
   GOOGLE_CREDENTIAL_CLIENT_SECRET,
   GOOGLE_REDIRECT_URI,
+  TOKEN_EXPIRATION_TIME,
 } from "../utils/config";
 
 const client = new OAuth2Client(
@@ -92,7 +93,7 @@ export const login: RequestHandler = async (req, res, next) => {
           userId: user._id.toString(),
         },
         SECRET_JWT_KEY,
-        { expiresIn: "1h" }
+        { expiresIn: TOKEN_EXPIRATION_TIME }
       );
       res.status(200).json({
         status: "success",
@@ -148,7 +149,7 @@ export const googleAuthentication: RequestHandler = async (req, res, next) => {
             userId: result._id.toString(),
           },
           SECRET_JWT_KEY,
-          { expiresIn: "1h" }
+          { expiresIn: TOKEN_EXPIRATION_TIME }
         );
         res.status(200).json({
           status: "success",

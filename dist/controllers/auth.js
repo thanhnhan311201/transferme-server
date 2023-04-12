@@ -78,7 +78,7 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
             const token = jsonwebtoken_1.default.sign({
                 email: user.email,
                 userId: user._id.toString(),
-            }, config_1.SECRET_JWT_KEY, { expiresIn: "1h" });
+            }, config_1.SECRET_JWT_KEY, { expiresIn: config_1.TOKEN_EXPIRATION_TIME });
             res.status(200).json({
                 status: "success",
                 code: 200,
@@ -128,7 +128,7 @@ const googleAuthentication = (req, res, next) => __awaiter(void 0, void 0, void 
                 const token = jsonwebtoken_1.default.sign({
                     email: result.email,
                     userId: result._id.toString(),
-                }, config_1.SECRET_JWT_KEY, { expiresIn: "1h" });
+                }, config_1.SECRET_JWT_KEY, { expiresIn: config_1.TOKEN_EXPIRATION_TIME });
                 res.status(200).json({
                     status: "success",
                     code: 200,
