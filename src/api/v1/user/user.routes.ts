@@ -1,12 +1,12 @@
 import express from "express";
 import { body } from "express-validator";
 
-import User from "../models/user";
-import * as authController from "../controllers/auth";
+import User from "./user.model";
+import userController from "./user.controller";
 
-const router = express.Router();
+const userRoutes = express.Router();
 
-router.post(
+userRoutes.post(
   "/signup",
   [
     body("email")
@@ -32,10 +32,10 @@ router.post(
         return true;
       }),
   ],
-  authController.signup
+  userController.signup
 );
 
-router.post(
+userRoutes.post(
   "/login",
   [
     body("email")
@@ -46,11 +46,11 @@ router.post(
       .trim()
       .isLength({ min: 8 }),
   ],
-  authController.login
+  userController.login
 );
 
-router.post("/google", authController.googleAuthentication);
+userRoutes.post("/google", userController.googleAuthentication);
 
-router.post("/verify-token", authController.verifyJWTToken);
+userRoutes.post("/verify-token", userController.verifyJWTToken);
 
-export default router;
+export default userRoutes;

@@ -2,8 +2,8 @@ import { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 import { type JwtPayload } from "jsonwebtoken";
 
-import { ResponseError } from "../utils/help";
-import { SECRET_JWT_KEY } from "../utils/config";
+import { ResponseError } from "../helpers";
+import { SECRET_JWT_KEY } from "../../../configs/general.config";
 
 const isAuth: RequestHandler = (req: Record<string, any>, res, next) => {
   const authHeader: string | undefined = req.get("Authorization");

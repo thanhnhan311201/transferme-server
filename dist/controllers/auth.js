@@ -41,7 +41,7 @@ const signup = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
             provider: "transferme",
         });
         const result = yield user.save();
-        res.status(201).json({
+        return res.status(201).json({
             message: "User signup successfully!",
             status: "success",
             code: 201,
@@ -79,7 +79,7 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
                 email: user.email,
                 userId: user._id.toString(),
             }, config_1.SECRET_JWT_KEY, { expiresIn: config_1.TOKEN_EXPIRATION_TIME });
-            res.status(200).json({
+            return res.status(200).json({
                 status: "success",
                 code: 200,
                 message: "Login successfully!",
@@ -129,7 +129,7 @@ const googleAuthentication = (req, res, next) => __awaiter(void 0, void 0, void 
                     email: result.email,
                     userId: result._id.toString(),
                 }, config_1.SECRET_JWT_KEY, { expiresIn: config_1.TOKEN_EXPIRATION_TIME });
-                res.status(200).json({
+                return res.status(200).json({
                     status: "success",
                     code: 200,
                     message: "Login successfully!",
@@ -150,8 +150,8 @@ const googleAuthentication = (req, res, next) => __awaiter(void 0, void 0, void 
                 const token = jsonwebtoken_1.default.sign({
                     email: result.email,
                     userId: result._id.toString(),
-                }, config_1.SECRET_JWT_KEY, { expiresIn: "1h" });
-                res.status(200).json({
+                }, config_1.SECRET_JWT_KEY, { expiresIn: config_1.TOKEN_EXPIRATION_TIME });
+                return res.status(200).json({
                     status: "success",
                     code: 200,
                     message: "Login successfully!",
@@ -175,30 +175,22 @@ const googleAuthentication = (req, res, next) => __awaiter(void 0, void 0, void 
 });
 exports.googleAuthentication = googleAuthentication;
 const verifyJWTToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const token = req.body.token;
-    if (!token) {
-        return res
-            .status(401)
-            .json({ status: "error", code: 401, message: "Not authenticated." });
-    }
-    let decodedToken;
     try {
-        decodedToken = jsonwebtoken_1.default.verify(token, config_1.SECRET_JWT_KEY);
-    }
-    catch (error) {
-        const err = new help_1.ResponseError("Not authenticated.", 401);
-        next(error);
-    }
-    if (!decodedToken) {
-        return res
-            .status(401)
-            .json({ status: "error", code: 401, message: "Not authenticated." });
-    }
-    try {
+        const token = req.body.token;
+        if (!token) {
+            return res
+                .status(401)
+                .json({ status: "error", code: 401, message: "Not authenticated." });
+        }
+        const decodedToken = jsonwebtoken_1.default.verify(token, config_1.SECRET_JWT_KEY);
+        if (!decodedToken) {
+            return res
+                .status(401)
+                .json({ status: "error", code: 401, message: "Not authenticated." });
+        }
         const user = yield user_1.default.findOne({ _id: decodedToken.userId });
         if (!user) {
-            const err = new help_1.ResponseError("User not found!", 401);
-            throw err;
+            throw new help_1.ResponseError("User not found!", 401);
         }
         return res.status(200).json({
             status: "success",
