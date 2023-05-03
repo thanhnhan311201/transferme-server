@@ -90,21 +90,26 @@ const initSocketServer = (httpServer: HttpServer) => {
       }
     }
     socket.emit(SOCKET_EVENTS.NEW_CONNECTION, {
-      socketNames,
+      socketNames: socketNames,
       socketName: socket.socketName,
     });
     socket.broadcast
       .to(socket.roomId)
-      .emit(SOCKET_EVENTS.NEW_CONNECTION, [socket.socketName]);
+      .emit(SOCKET_EVENTS.NEW_CONNECTION, { socketNames: [socket.socketName] });
 
-    socket.use((event, next) => {
-      console.log(event);
-    });
+    // socket.use((event, next) => {
+    //   console.log(event);
+    // });
 
     socketEventListener(socket);
 
     socket.on("disconnect", (reason) => {
+      socket.leave(socket.roomId);
+      socket
+        .to(socket.roomId)
+        .emit(SOCKET_EVENTS.USER_LOGOUT, socket.socketName);
       socketLogger(`User ${socket.id} disconnected!`);
+      socketLogger(`Number of connected sockets: ${io!.of("/").sockets.size}`);
     });
   });
 };
