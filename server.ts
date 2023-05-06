@@ -3,7 +3,7 @@ dotenv.config();
 
 import httpServer from "./src/app";
 import connectDatabase from "./src/configs/db.config";
-import initSocketServer from "./src/socket";
+import socketServer from "./src/socket";
 
 import { serverLogger } from "./src/utils/logger.util";
 
@@ -17,7 +17,7 @@ httpServer.listen(port, () => {
 connectDatabase();
 
 // init socket server
-initSocketServer(httpServer);
+socketServer.initSocketServer(httpServer);
 
 // Close the server and exit the process when a termination signal is received
 process.on("SIGTERM", () => {

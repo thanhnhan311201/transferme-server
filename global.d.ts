@@ -1,4 +1,4 @@
-import { Socket } from "socket.io";
+import { Socket, Server as SocketServer } from "socket.io";
 import type mongoose from "mongoose";
 
 declare module "socket.io" {
@@ -12,5 +12,14 @@ declare module "socket.io" {
     };
     socketName: string;
     roomId: string;
+  }
+}
+
+declare global {
+  namespace NodeJS {
+    interface Global {
+      _io: SocketServer;
+      test: string;
+    }
   }
 }
