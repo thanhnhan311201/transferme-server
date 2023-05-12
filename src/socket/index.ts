@@ -2,6 +2,7 @@ import socketIO from "socket.io";
 import type { Server as HttpServer } from "http";
 import jwt, { Jwt, type JwtPayload } from "jsonwebtoken";
 import helmet from "helmet";
+import mongoose from "mongoose";
 
 import transferEventListener from "./transfer.listener.socket";
 import { SOCKET_EVENTS } from "./config.socket";
@@ -19,6 +20,9 @@ import { SECRET_JWT_KEY } from "../configs/general.config";
 
 class SocketServer {
   private _io: socketIO.Server | null = null;
+  private socketRecord: Map<string, string> = new Map();
+  private _receiver: string = "";
+  private _sender: string = "";
 
   initSocketServer(httpServer: HttpServer) {
     this._io = new socketIO.Server(httpServer, {
@@ -56,18 +60,16 @@ class SocketServer {
 
           const user = await userModel.findById(
             decodedToken.userId,
-            "_id email name picture provider"
+            "_id email name picture"
           );
           if (!user) {
             throw new Error("Not authorized!");
           }
 
-          const emailDomain = user.email.split("@")[0];
-          socket.socketName = `${
-            emailDomain.length <= 15 ? emailDomain : emailDomain.slice(0, 16)
-          }@${genRandomString(5)}`;
-          socket.roomId = user._id.toString();
-          socket.userInfo = user;
+          socket.user = user;
+
+          this.socketRecord.set(user._id.toString(), socket.id);
+
           next();
         } catch (error: any) {
           if (error instanceof Error) {
@@ -84,34 +86,32 @@ class SocketServer {
         `Number of connected sockets: ${this._io!.of("/").sockets.size}`
       );
 
-      socket.join(socket.roomId);
-
-      const socketNames: string[] = [];
-      const socketIds: Set<string> | undefined =
-        this._io!.sockets.adapter.rooms.get(socket.roomId);
-      if (socketIds) {
-        for (const socketId of socketIds) {
-          const _socket = this._io!.of("/").sockets.get(socketId);
-          if (_socket) {
-            socketNames.push(_socket.socketName);
+      let onlineUsers: {
+        id: string;
+        email: string;
+        name: string;
+        picture: string;
+      }[] = [];
+      this._io!.of("/").sockets.forEach(
+        (_socket: socketIO.Socket, socketId: string) => {
+          if (socketId !== socket.id) {
+            onlineUsers.push({
+              id: _socket.user._id.toString(),
+              email: _socket.user.email,
+              name: _socket.user.name,
+              picture: _socket.user.picture,
+            });
           }
         }
-      }
-      socket.emit(SOCKET_EVENTS.NEW_CONNECTION, {
-        socketNames: socketNames,
-        socketName: socket.socketName,
-      });
-      socket.broadcast.to(socket.roomId).emit(SOCKET_EVENTS.NEW_CONNECTION, {
-        socketNames: [socket.socketName],
-      });
+      );
+
+      socket.emit(SOCKET_EVENTS.NEW_CONNECTION, onlineUsers);
+      socket.broadcast.emit(SOCKET_EVENTS.NEW_CONNECTION, [socket.user]);
 
       transferEventListener(socket);
 
       socket.on("disconnect", (reason) => {
-        socket.leave(socket.roomId);
-        socket
-          .to(socket.roomId)
-          .emit(SOCKET_EVENTS.USER_LOGOUT, socket.socketName);
+        socket.broadcast.emit(SOCKET_EVENTS.USER_LOGOUT, socket.user._id);
         socketLogger(`User ${socket.id} disconnected!`);
         socketLogger(
           `Number of connected sockets: ${this._io!.of("/").sockets.size}`
@@ -125,6 +125,26 @@ class SocketServer {
       throw new Error("SocketIO not initialized!");
     }
     return this._io;
+  }
+
+  getSocketId(socketName: string) {
+    return this.socketRecord.get(socketName);
+  }
+
+  set receiver(newReceiver: string) {
+    this._receiver = newReceiver;
+  }
+
+  get receiver(): string {
+    return this._receiver;
+  }
+
+  set sender(newSender: string) {
+    this._sender = newSender;
+  }
+
+  get sender(): string {
+    return this._sender;
   }
 }
 

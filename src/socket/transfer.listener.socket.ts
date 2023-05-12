@@ -3,24 +3,36 @@ import socketIO from "socket.io";
 import transferController from "./transfer.controller.socket";
 
 import { SOCKET_EVENTS } from "./config.socket";
+import { errorLogger } from "../utils/logger.util";
 
 const transferEventListener = (socket: socketIO.Socket) => {
-  socket.on(
-    SOCKET_EVENTS.ERROR_TRANSFER,
-    transferController.handleTransferFailed
-  );
+  socket.on(SOCKET_EVENTS.ERROR_TRANSFER, () => {
+    transferController.handleTransferFailed(socket);
+  });
+
+  socket.on(SOCKET_EVENTS.SUCCESS_TRANSFER, () => {
+    transferController.handleTransferSuccess(socket);
+  });
+
+  socket.on(SOCKET_EVENTS.REQUEST_SEND_FILE, (userId: string) => {
+    transferController.handleRequestTransfer(socket, userId);
+  });
 
   socket.on(
-    SOCKET_EVENTS.WAIT_TRANSFER_ACCEPTED,
-    transferController.handlePending
+    SOCKET_EVENTS.SEND_FILE,
+    (file: {
+      fileData: ArrayBuffer;
+      fileName: string;
+      fileType: string;
+      fileSize: number;
+    }) => {
+      transferController.handleSendFile(socket, file);
+    }
   );
 
-  socket.on(SOCKET_EVENTS.SEND_FILE, transferController.sendFile);
-
-  socket.on(
-    SOCKET_EVENTS.SUCCESS_TRANSFER,
-    transferController.handleTransferSuccess
-  );
+  socket.on(SOCKET_EVENTS.REPLY_TO_REQUEST, (confirm: boolean) => {
+    transferController.handleResponse(socket, confirm);
+  });
 };
 
 export default transferEventListener;
