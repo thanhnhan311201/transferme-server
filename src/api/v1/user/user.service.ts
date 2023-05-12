@@ -2,9 +2,10 @@ import jwt, { Jwt, type JwtPayload } from "jsonwebtoken";
 import { auth, OAuth2Client, type Credentials } from "google-auth-library";
 import bcrypt from "bcryptjs";
 
-import User from "./user.model";
+import userModel from "./user.model";
 
-import { genRandomName, ResponseError } from "../helpers";
+import { ResponseError } from "../helpers";
+import { genRandomString } from "../../../utils/general.utils";
 import {
   SECRET_JWT_KEY,
   GOOGLE_CREDENTIAL_CLIENT_ID,
@@ -23,10 +24,10 @@ const client = new OAuth2Client(
 namespace userService {
   export const signup = async (email: string, password: string) => {
     const hashPassword = bcrypt.hashSync(password, 12);
-    const user = new User({
+    const user = new userModel({
       email: email,
       password: hashPassword,
-      name: genRandomName(12),
+      name: genRandomString(12),
       picture: "/images/user.png",
       provider: "transferme",
     });
@@ -35,7 +36,7 @@ namespace userService {
   };
 
   export const login = async (email: string, password: string) => {
-    const user = await User.findOne({ email: email });
+    const user = await userModel.findOne({ email: email });
     if (!user) {
       const err = new ResponseError(
         "The user with this email could not be found!",
@@ -80,11 +81,11 @@ namespace userService {
     }
 
     let savedUser: IUserModel;
-    const user = await User.findOne({ email: payload.email });
+    const user = await userModel.findOne({ email: payload.email });
     if (!user) {
-      const user = new User({
+      const user = new userModel({
         email: payload.email,
-        password: bcrypt.hashSync(genRandomName(8), 12),
+        password: bcrypt.hashSync(genRandomString(8), 12),
         name: payload.name,
         picture: payload.picture,
         provider: "google",
@@ -108,7 +109,7 @@ namespace userService {
 
     return {
       token: token,
-      user: user,
+      user: savedUser,
     };
   };
 
@@ -119,7 +120,7 @@ namespace userService {
         throw new ResponseError("User not found!", 401);
       }
 
-      const user = await User.findOne({ _id: decodedToken.userId });
+      const user = await userModel.findOne({ _id: decodedToken.userId });
       if (!user) {
         throw new ResponseError("User not found!", 401);
       }

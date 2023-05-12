@@ -6,14 +6,10 @@ import morgan from "morgan";
 import helmet from "helmet";
 import { createStream } from "rotating-file-stream";
 import bodyParser from "body-parser";
-import { Server } from "socket.io";
 import uuid from "uuid";
 
 import apiRouter from "./router";
-import connectDatabase from "./configs/db.config";
-import { BASE_URL_API } from "./configs/general.config";
-
-connectDatabase();
+import { BASE_URL_API, BASE_URL_CLIENT } from "./configs/general.config";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -21,27 +17,7 @@ const isProduction = process.env.NODE_ENV === "production";
 const app: Express = express();
 const httpServer = createServer(app);
 
-// add socketio
-const io = new Server(httpServer, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "PUT", "POST", "DELETE", "OPTIONs"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  },
-});
-
-io.on("connection", (socket) => {
-  console.log(socket.id);
-  console.log(io.of("/").sockets.size);
-
-  socket.on("disconnect", (reason) => {
-    console.log(reason);
-    console.log("User disconnected!");
-    console.log(io.of("/").sockets.size);
-  });
-});
-
-// add util middleware
+// add util middlewares
 const accessLogStream = createStream("access.log", {
   interval: "1d",
   path: path.join(__dirname, "log"),
@@ -49,17 +25,17 @@ const accessLogStream = createStream("access.log", {
 app.use(
   isProduction
     ? morgan(
-        '⚡️[api]: :remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"',
+        '⚡️[INFO]: :remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"',
         { stream: accessLogStream }
       )
     : morgan(
-        "⚡️[api]: :method :url :status :response-time ms - :res[content-length]"
+        "⚡️[INFO]: :method :url :status :response-time ms - :res[content-length]"
       )
 );
 app.use(helmet());
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: [BASE_URL_CLIENT],
     methods: "GET, POST, PUT, DELETE, OPTIONS",
     allowedHeaders: "Content-Type, Authorization",
   })

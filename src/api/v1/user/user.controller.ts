@@ -4,10 +4,10 @@ import nodemailer from "nodemailer";
 import type { RequestHandler } from "express";
 import { validationResult } from "express-validator";
 
-import User from "./user.model";
 import userService from "./user.service";
 
 import { ResponseError } from "../helpers";
+import { errorLogger } from "../../../utils/logger.util";
 
 namespace userController {
   export const signup: RequestHandler = async (req, res, next) => {
@@ -31,6 +31,7 @@ namespace userController {
         code: 201,
       });
     } catch (error: ResponseError | any) {
+      errorLogger(error.message);
       if (!error.status) {
         error.status = 500;
       }
@@ -65,6 +66,7 @@ namespace userController {
         },
       });
     } catch (error: ResponseError | any) {
+      errorLogger(error.message);
       if (!error.status) {
         error.status = 500;
       }
@@ -95,6 +97,7 @@ namespace userController {
         },
       });
     } catch (error: ResponseError | any) {
+      errorLogger(error.message);
       if (!error.status) {
         error.status = 500;
       }
@@ -125,6 +128,7 @@ namespace userController {
         },
       });
     } catch (error: ResponseError | any) {
+      errorLogger(error.message);
       if (!error.status) {
         error.status = 500;
       }
