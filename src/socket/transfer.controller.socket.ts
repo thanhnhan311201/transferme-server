@@ -17,23 +17,22 @@ namespace transferController {
     socket: socketIo.Socket,
     userId: string
   ) => {
+    if (!userId) {
+      socketServer.receiver = "";
+      return socket.emit("error", { message: "The user not found!" });
+    }
     socketServer.sender = socket.id;
 
     const receivedSocketId = socketServer.getSocketId(userId);
     if (!receivedSocketId) {
       socketServer.receiver = "";
-      return socket.emit("error", { message: "The device not found!" });
+      return socket.emit("error", { message: "The user not found!" });
     }
     socketServer.receiver = receivedSocketId;
-    const receivedSocket = socketServer.io
-      .of("/")
-      .sockets.get(receivedSocketId);
-    if (!receivedSocket) {
-      return socket.emit("error", { message: "The device not found!" });
-    }
+
     socketServer.io
-      .to(receivedSocket.id)
-      .emit(SOCKET_EVENTS.WAIT_TRANSFER_ACCEPTED);
+      .to(receivedSocketId)
+      .emit(SOCKET_EVENTS.WAIT_TRANSFER_ACCEPTED, socket.user.email);
   };
 
   export const handleResponse = (socket: socketIo.Socket, confirm: boolean) => {
@@ -55,11 +54,29 @@ namespace transferController {
       fileName: string;
       fileType: string;
       fileSize: number;
+      totalChunk: number;
+      countChunkId: number;
     }
   ) => {
     socketServer.io
       .to(socketServer.receiver)
       .emit(SOCKET_EVENTS.RECEIVE_FILE, file);
+  };
+
+  export const handleAcknowledge = (
+    socket: socketIo.Socket,
+    ack: { done: boolean; receivedChunk: number; totalChunk: number }
+  ) => {
+    socketServer.io
+      .to(socketServer.sender)
+      .emit(SOCKET_EVENTS.ON_ACK_RECEIVE_FILE, ack);
+  };
+
+  export const handleCancelTransfer = (socket: socketIo.Socket) => {
+    console.log("cancel transfer");
+    socketServer.io
+      .to(socketServer.receiver)
+      .emit(SOCKET_EVENTS.ON_CANCEL_TRANSFER);
   };
 }
 

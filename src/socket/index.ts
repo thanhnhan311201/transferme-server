@@ -106,7 +106,14 @@ class SocketServer {
       );
 
       socket.emit(SOCKET_EVENTS.NEW_CONNECTION, onlineUsers);
-      socket.broadcast.emit(SOCKET_EVENTS.NEW_CONNECTION, [socket.user]);
+      socket.broadcast.emit(SOCKET_EVENTS.NEW_CONNECTION, [
+        {
+          id: socket.user._id.toString(),
+          email: socket.user.email,
+          name: socket.user.name,
+          picture: socket.user.picture,
+        },
+      ]);
 
       transferEventListener(socket);
 
@@ -127,8 +134,8 @@ class SocketServer {
     return this._io;
   }
 
-  getSocketId(socketName: string) {
-    return this.socketRecord.get(socketName);
+  getSocketId(userId: string) {
+    return this.socketRecord.get(userId);
   }
 
   set receiver(newReceiver: string) {
