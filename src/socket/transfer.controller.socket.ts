@@ -18,17 +18,26 @@ namespace transferController {
     userId: string
   ) => {
     if (!userId) {
-      socketServer.receiver = "";
       return socket.emit("error", { message: "The user not found!" });
     }
-    socketServer.sender = socket.id;
 
     const receivedSocketId = socketServer.getSocketId(userId);
     if (!receivedSocketId) {
-      socketServer.receiver = "";
       return socket.emit("error", { message: "The user not found!" });
     }
-    socketServer.receiver = receivedSocketId;
+
+    const receivedSocket = socketServer.io
+      .of("/")
+      .sockets.get(receivedSocketId);
+    if (!receivedSocket) {
+      return socket.emit("error", { message: "The device not found!" });
+    }
+
+    const transferRoom = `${socket.user._id.toString()}_${userId}`;
+    socket.transferRoom = transferRoom;
+    receivedSocket.transferRoom = transferRoom;
+    socket.join(transferRoom);
+    receivedSocket.join(transferRoom);
 
     socketServer.io
       .to(receivedSocketId)
@@ -37,13 +46,17 @@ namespace transferController {
 
   export const handleResponse = (socket: socketIo.Socket, confirm: boolean) => {
     if (confirm) {
-      socketServer.io
-        .to(socketServer.sender)
+      socket.broadcast
+        .to(socket.transferRoom)
         .emit(SOCKET_EVENTS.ACCEPT_REQUEST);
     } else {
-      socketServer.io
-        .to(socketServer.sender)
+      socket.broadcast
+        .to(socket.transferRoom)
         .emit(SOCKET_EVENTS.REFUSE_REQUEST);
+      socketServer.io
+        .of("/")
+        .in(socket.transferRoom)
+        .socketsLeave(socket.transferRoom);
     }
   };
 
@@ -58,8 +71,8 @@ namespace transferController {
       countChunkId: number;
     }
   ) => {
-    socketServer.io
-      .to(socketServer.receiver)
+    socket.broadcast
+      .to(socket.transferRoom)
       .emit(SOCKET_EVENTS.RECEIVE_FILE, file);
   };
 
@@ -67,15 +80,21 @@ namespace transferController {
     socket: socketIo.Socket,
     ack: { done: boolean; receivedChunk: number; totalChunk: number }
   ) => {
-    socketServer.io
-      .to(socketServer.sender)
+    socket.broadcast
+      .to(socket.transferRoom)
       .emit(SOCKET_EVENTS.ON_ACK_RECEIVE_FILE, ack);
+
+    if (ack.done) {
+      socketServer.io
+        .of("/")
+        .in(socket.transferRoom)
+        .socketsLeave(socket.transferRoom);
+    }
   };
 
   export const handleCancelTransfer = (socket: socketIo.Socket) => {
-    console.log("cancel transfer");
-    socketServer.io
-      .to(socketServer.receiver)
+    socket.broadcast
+      .to(socket.transferRoom)
       .emit(SOCKET_EVENTS.ON_CANCEL_TRANSFER);
   };
 }

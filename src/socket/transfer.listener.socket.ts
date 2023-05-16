@@ -6,14 +6,6 @@ import { SOCKET_EVENTS } from "./config.socket";
 import { errorLogger } from "../utils/logger.util";
 
 const transferEventListener = (socket: socketIO.Socket) => {
-  socket.on(SOCKET_EVENTS.ERROR_TRANSFER, () => {
-    transferController.handleTransferFailed(socket);
-  });
-
-  socket.on(SOCKET_EVENTS.SUCCESS_TRANSFER, () => {
-    transferController.handleTransferSuccess(socket);
-  });
-
   socket.on(SOCKET_EVENTS.REQUEST_SEND_FILE, (userId: string) => {
     transferController.handleRequestTransfer(socket, userId);
   });

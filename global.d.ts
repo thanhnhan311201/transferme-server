@@ -9,6 +9,7 @@ declare module "socket.io" {
       name: string;
       picture: string;
     };
+    transferRoom: string;
   }
 }
 

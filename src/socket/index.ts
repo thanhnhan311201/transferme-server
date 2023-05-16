@@ -21,8 +21,6 @@ import { SECRET_JWT_KEY } from "../configs/general.config";
 class SocketServer {
   private _io: socketIO.Server | null = null;
   private socketRecord: Map<string, string> = new Map();
-  private _receiver: string = "";
-  private _sender: string = "";
 
   initSocketServer(httpServer: HttpServer) {
     this._io = new socketIO.Server(httpServer, {
@@ -136,22 +134,6 @@ class SocketServer {
 
   getSocketId(userId: string) {
     return this.socketRecord.get(userId);
-  }
-
-  set receiver(newReceiver: string) {
-    this._receiver = newReceiver;
-  }
-
-  get receiver(): string {
-    return this._receiver;
-  }
-
-  set sender(newSender: string) {
-    this._sender = newSender;
-  }
-
-  get sender(): string {
-    return this._sender;
   }
 }
 
