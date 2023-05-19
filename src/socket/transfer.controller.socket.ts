@@ -15,13 +15,13 @@ namespace transferController {
 
   export const handleRequestTransfer = (
     socket: socketIo.Socket,
-    userId: string
+    clientId: string
   ) => {
-    if (!userId) {
+    if (!clientId) {
       return socket.emit("error", { message: "The user not found!" });
     }
 
-    const receivedSocketId = socketServer.getSocketId(userId);
+    const receivedSocketId = socketServer.getSocketId(clientId);
     if (!receivedSocketId) {
       return socket.emit("error", { message: "The user not found!" });
     }
@@ -33,7 +33,7 @@ namespace transferController {
       return socket.emit("error", { message: "The device not found!" });
     }
 
-    const transferRoom = `${socket.user._id.toString()}_${userId}`;
+    const transferRoom = `${socket.clientId}_${clientId}`;
     socket.transferRoom = transferRoom;
     receivedSocket.transferRoom = transferRoom;
     socket.join(transferRoom);
