@@ -57,6 +57,7 @@ app.get("/", (req: Request, res: Response, next: NextFunction) =>
     user_login: `${BASE_URL_API}/v1/user/login`,
     user_signup: `${BASE_URL_API}/v1/user/signup`,
     verify_jwt_token: `${BASE_URL_API}/v1/user/verify-token`,
+    verify_email: `${BASE_URL_API}/v1/user/verify-email`,
     google_login: `${BASE_URL_API}/v1/user/google`,
   })
 );
@@ -69,6 +70,7 @@ app.use("*", (req: Request, res: Response, next: NextFunction) => {
       user_login: `${BASE_URL_API}/v1/user/login`,
       user_signup: `${BASE_URL_API}/v1/user/signup`,
       verify_jwt_token: `${BASE_URL_API}/v1/user/verify-token`,
+      verify_email: `${BASE_URL_API}/v1/user/verify-email`,
       google_login: `${BASE_URL_API}/v1/user/google`,
     },
   });

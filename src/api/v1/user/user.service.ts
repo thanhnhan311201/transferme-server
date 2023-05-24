@@ -22,12 +22,16 @@ const client = new OAuth2Client(
 );
 
 namespace userService {
-  export const signup = async (email: string, password: string) => {
+  export const signup = async (
+    username: string,
+    email: string,
+    password: string
+  ) => {
     const hashPassword = bcrypt.hashSync(password, 12);
     const user = new userModel({
       email: email,
       password: hashPassword,
-      name: genRandomString(12),
+      name: username,
       picture: "/images/user.png",
       provider: "transferme",
     });
