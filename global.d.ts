@@ -9,6 +9,9 @@ declare module "socket.io" {
       name: string;
       picture: string;
     };
+    transferRoom: string;
+    clientId: string;
+    roomId: string;
   }
 }
 

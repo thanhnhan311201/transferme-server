@@ -21,8 +21,6 @@ import { SECRET_JWT_KEY } from "../configs/general.config";
 class SocketServer {
   private _io: socketIO.Server | null = null;
   private socketRecord: Map<string, string> = new Map();
-  private _receiver: string = "";
-  private _sender: string = "";
 
   initSocketServer(httpServer: HttpServer) {
     this._io = new socketIO.Server(httpServer, {
@@ -67,8 +65,10 @@ class SocketServer {
           }
 
           socket.user = user;
+          socket.roomId = user._id.toString();
+          socket.clientId = `${user.email.split("@")[0]}@${genRandomString(5)}`;
 
-          this.socketRecord.set(user._id.toString(), socket.id);
+          this.socketRecord.set(socket.clientId, socket.id);
 
           next();
         } catch (error: any) {
@@ -86,32 +86,54 @@ class SocketServer {
         `Number of connected sockets: ${this._io!.of("/").sockets.size}`
       );
 
+      socket.join(socket.roomId);
+
       let onlineUsers: {
         id: string;
-        email: string;
-        name: string;
+        clientId: string;
         picture: string;
       }[] = [];
-      this._io!.of("/").sockets.forEach(
-        (_socket: socketIO.Socket, socketId: string) => {
-          if (socketId !== socket.id) {
+
+      const roomSockets = this._io!.of("/").adapter.rooms.get(socket.roomId);
+      if (roomSockets) {
+        for (const socketId of roomSockets) {
+          if (socketId === socket.id) {
+            continue;
+          }
+          const _socket = this._io?.of("/").sockets.get(socketId);
+          if (_socket) {
             onlineUsers.push({
               id: _socket.user._id.toString(),
-              email: _socket.user.email,
-              name: _socket.user.name,
+              clientId: _socket.clientId,
               picture: _socket.user.picture,
             });
           }
         }
-      );
+      }
 
-      socket.emit(SOCKET_EVENTS.NEW_CONNECTION, onlineUsers);
-      socket.broadcast.emit(SOCKET_EVENTS.NEW_CONNECTION, [socket.user]);
+      socket.emit(SOCKET_EVENTS.NEW_CONNECTION, {
+        action: "login",
+        onlineUsers,
+        clientId: socket.clientId,
+      });
+      socket.broadcast.to(socket.roomId).emit(SOCKET_EVENTS.NEW_CONNECTION, {
+        action: "new_user_login",
+        onlineUsers: [
+          {
+            id: socket.user._id.toString(),
+            clientId: socket.clientId,
+            picture: socket.user.picture,
+          },
+        ],
+        clientId: "",
+      });
 
       transferEventListener(socket);
 
       socket.on("disconnect", (reason) => {
-        socket.broadcast.emit(SOCKET_EVENTS.USER_LOGOUT, socket.user._id);
+        socket.broadcast
+          .to(socket.roomId)
+          .emit(SOCKET_EVENTS.USER_LOGOUT, socket.user._id);
         socketLogger(`User ${socket.id} disconnected!`);
         socketLogger(
           `Number of connected sockets: ${this._io!.of("/").sockets.size}`
@@ -127,24 +149,8 @@ class SocketServer {
     return this._io;
   }
 
-  getSocketId(socketName: string) {
-    return this.socketRecord.get(socketName);
-  }
-
-  set receiver(newReceiver: string) {
-    this._receiver = newReceiver;
-  }
-
-  get receiver(): string {
-    return this._receiver;
-  }
-
-  set sender(newSender: string) {
-    this._sender = newSender;
-  }
-
-  get sender(): string {
-    return this._sender;
+  getSocketId(userId: string) {
+    return this.socketRecord.get(userId);
   }
 }
 

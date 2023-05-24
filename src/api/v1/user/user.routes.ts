@@ -53,4 +53,21 @@ userRoutes.post("/google", userController.googleAuthentication);
 
 userRoutes.post("/verify-token", userController.verifyJWTToken);
 
+userRoutes.post(
+  "/verify-email",
+  [
+    body("email")
+      .isEmail()
+      .withMessage("Please enter a valid email.")
+      .custom(async (value) => {
+        const user = await User.findOne({ email: value });
+        if (user) {
+          return Promise.reject("Email address is already exists.");
+        }
+      })
+      .normalizeEmail(),
+  ],
+  userController.verifyEmail
+);
+
 export default userRoutes;

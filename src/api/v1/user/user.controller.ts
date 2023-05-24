@@ -21,10 +21,11 @@ namespace userController {
         );
         throw error;
       }
+      const username = req.body.username;
       const email = req.body.email;
       const password = req.body.password;
 
-      const result = await userService.signup(email, password);
+      const result = await userService.signup(username, email, password);
       return res.status(201).json({
         message: "User signup successfully!",
         status: "success",
@@ -133,6 +134,23 @@ namespace userController {
         error.status = 500;
       }
       next(error);
+    }
+  };
+
+  export const verifyEmail: RequestHandler = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({
+        status: "error",
+        code: 422,
+        message: "That email has already been taken!",
+      });
+    } else {
+      return res.status(200).json({
+        status: "success",
+        code: 200,
+        message: "That email can be used!",
+      });
     }
   };
 }
