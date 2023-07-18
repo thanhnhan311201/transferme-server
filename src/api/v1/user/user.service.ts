@@ -15,6 +15,8 @@ import {
 } from "../../../configs/general.config";
 import { IUserModel } from "../../../configs/interfaces.config";
 
+import { BASE_URL_SERVER } from "../../../configs/general.config";
+
 const client = new OAuth2Client(
   GOOGLE_CREDENTIAL_CLIENT_ID,
   GOOGLE_CREDENTIAL_CLIENT_SECRET,
@@ -32,7 +34,7 @@ namespace userService {
       email: email,
       password: hashPassword,
       name: username,
-      picture: "/images/user.png",
+      picture: `${BASE_URL_SERVER}/images/user.png`,
       provider: "transferme",
     });
 
