@@ -14,3 +14,8 @@ export const GOOGLE_CREDENTIAL_CLIENT_ID = process.env
 export const GOOGLE_CREDENTIAL_CLIENT_SECRET = process.env
   .GOOGLE_CREDENTIAL_CLIENT_SECRET as string;
 export const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI as string;
+
+export const GITHUB_CREDENTIAL_CLIENT_ID = process.env
+  .GITHUB_CREDENTIAL_CLIENT_ID as string;
+export const GITHUB_CREDENTIAL_CLIENT_SECRET = process.env
+  .GITHUB_CREDENTIAL_CLIENT_SECRET as string;

@@ -41,14 +41,7 @@ app.use(
   })
 );
 app.use(bodyParser.json());
-app.use("/images", express.static(path.join(__dirname, "images")));
-app.use(
-  cors({
-    origin: ["http://localhost:3000"],
-    methods: "GET, POST, PUT, DELETE, OPTIONS",
-    allowedHeaders: "Content-Type, Authorization",
-  })
-);
+app.use("/images", express.static(path.join(__dirname, "public/images")));
 
 // add request handler
 app.use("/api", apiRouter);

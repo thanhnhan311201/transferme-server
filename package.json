@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc",
     "start": "node dist/server.js",
+    "copy-public": "copyfiles -u 1 src/public/**/* dist/src",
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/server.js\""
   },
   "keywords": [],
@@ -40,6 +41,7 @@
     "@types/nodemailer": "^6.4.7",
     "@types/uuid": "^9.0.1",
     "concurrently": "^7.6.0",
+    "copyfiles": "^2.4.1",
     "nodemon": "^2.0.22",
     "typescript": "^5.0.2"
   }

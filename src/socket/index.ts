@@ -64,9 +64,23 @@ class SocketServer {
             throw new Error("Not authorized!");
           }
 
+          const usernameEmail =
+            user.email.split("@")[0].length > 15
+              ? user.email.split("@")[0].slice(0, 15)
+              : user.email.split("@")[0];
+          let clientId: string = `${usernameEmail}@${genRandomString(5)}`;
+          const clientIds = Array.from(this.socketRecord.keys());
+          while (true) {
+            if (!clientIds.includes(clientId)) {
+              break;
+            }
+
+            clientId = `${usernameEmail}@${genRandomString(5)}`;
+          }
+
           socket.user = user;
           socket.roomId = user._id.toString();
-          socket.clientId = `${user.email.split("@")[0]}@${genRandomString(5)}`;
+          socket.clientId = clientId;
 
           this.socketRecord.set(socket.clientId, socket.id);
 
@@ -134,7 +148,7 @@ class SocketServer {
         socket.broadcast
           .to(socket.roomId)
           .emit(SOCKET_EVENTS.USER_LOGOUT, socket.user._id);
-        socketLogger(`User ${socket.id} disconnected!`);
+        socket.leave(socket.roomId);
         socketLogger(
           `Number of connected sockets: ${this._io!.of("/").sockets.size}`
         );
