@@ -40,14 +40,20 @@ class SocketServer {
         next: (err?: ExtendedError | undefined) => void
       ) => {
         try {
-          const cookie = socket.handshake.headers.cookie;
-          if (!cookie) {
-            throw new Error("Not authorized!");
+          // const cookie = socket.handshake.headers.cookie;
+          // if (!cookie) {
+          //   throw new Error("Not authorized!");
+          // }
+          // const token = cookie
+          //   .split(";")
+          //   .find((str) => str.includes("access_token"))
+          //   ?.split("=")[1];
+          if (!socket.handshake.auth) {
+            throw new Error("Not authorized!")
           }
-          const token = cookie
-            .split(";")
-            .find((str) => str.includes("access_token"))
-            ?.split("=")[1];
+
+          const token: string = socket.handshake.auth.token
+
           if (!token) {
             throw new Error("Not authorized!");
           }
