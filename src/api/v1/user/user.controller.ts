@@ -1,6 +1,5 @@
 import crypto from "crypto";
 
-import nodemailer from "nodemailer";
 import type { RequestHandler } from "express";
 import { validationResult } from "express-validator";
 
@@ -27,9 +26,15 @@ namespace userController {
 
       const result = await userService.signup(username, email, password);
       return res.status(201).json({
-        message: "User signup successfully!",
         status: "success",
-        code: 201,
+        data: {
+          user: {
+            email: result.email,
+            id: result._id,
+            name: result.name,
+            picture: result.picture,
+          },
+        },
       });
     } catch (error: ResponseError | any) {
       errorLogger(error.message);
@@ -56,14 +61,14 @@ namespace userController {
 
       return res.status(200).json({
         status: "success",
-        code: 200,
-        message: "Login successfully!",
-        token: token,
-        user: {
-          email: user.email,
-          id: user._id,
-          name: user.name,
-          picture: user.picture,
+        data: {
+          token: token,
+          user: {
+            email: user.email,
+            id: user._id,
+            name: user.name,
+            picture: user.picture,
+          },
         },
       });
     } catch (error: ResponseError | any) {
@@ -87,14 +92,14 @@ namespace userController {
 
       return res.status(200).json({
         status: "success",
-        code: 200,
-        message: "Login successfully!",
-        token: token,
-        user: {
-          email: user!.email,
-          id: user!._id,
-          name: user!.name,
-          picture: user!.picture,
+        data: {
+          token: token,
+          user: {
+            email: user!.email,
+            id: user!._id,
+            name: user!.name,
+            picture: user!.picture,
+          },
         },
       });
     } catch (error: ResponseError | any) {
@@ -112,20 +117,21 @@ namespace userController {
       if (!token) {
         return res
           .status(401)
-          .json({ status: "error", code: 401, message: "Not authenticated." });
+          .json({ status: "error", message: "Not authenticated." });
       }
 
       const user = await userService.verifyToken(token);
 
       return res.status(200).json({
         status: "success",
-        code: 200,
-        message: "Authenticated.",
-        user: {
-          email: user.email,
-          id: user._id,
-          name: user.name,
-          picture: user.picture,
+        data: {
+          token: token,
+          user: {
+            email: user.email,
+            id: user._id,
+            name: user.name,
+            picture: user.picture,
+          },
         },
       });
     } catch (error: ResponseError | any) {
@@ -142,14 +148,14 @@ namespace userController {
     if (!errors.isEmpty()) {
       return res.status(422).json({
         status: "error",
-        code: 422,
         message: "That email has already been taken!",
       });
     } else {
       return res.status(200).json({
         status: "success",
-        code: 200,
-        message: "That email can be used!",
+        data: {
+          email: req.body.email,
+        },
       });
     }
   };

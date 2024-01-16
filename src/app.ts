@@ -57,7 +57,6 @@ app.get("/", (req: Request, res: Response, next: NextFunction) =>
 app.use("*", (req: Request, res: Response, next: NextFunction) => {
   res.status(404).json({
     status: "error",
-    code: 404,
     message: "Not found!",
     links: {
       user_login: `${BASE_URL_API}/v1/user/login`,
