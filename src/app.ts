@@ -47,11 +47,11 @@ app.use("/images", express.static(path.join(__dirname, "public/images")));
 app.use("/api", apiRouter);
 app.get("/", (req: Request, res: Response, next: NextFunction) =>
   res.json({
-    user_login: `${BASE_URL_API}/v1/user/login`,
-    user_signup: `${BASE_URL_API}/v1/user/signup`,
-    verify_jwt_token: `${BASE_URL_API}/v1/user/verify-token`,
-    verify_email: `${BASE_URL_API}/v1/user/verify-email`,
-    google_login: `${BASE_URL_API}/v1/user/google`,
+    user_login: `${BASE_URL_API}/v1/auth/login`,
+    user_signup: `${BASE_URL_API}/v1/auth/signup`,
+    verify_jwt_token: `${BASE_URL_API}/v1/auth/verify-token`,
+    verify_email: `${BASE_URL_API}/v1/auth/verify-email`,
+    google_login: `${BASE_URL_API}/v1/auth/google`,
   })
 );
 app.use("*", (req: Request, res: Response, next: NextFunction) => {
@@ -59,11 +59,11 @@ app.use("*", (req: Request, res: Response, next: NextFunction) => {
     status: "error",
     message: "Not found!",
     links: {
-      user_login: `${BASE_URL_API}/v1/user/login`,
-      user_signup: `${BASE_URL_API}/v1/user/signup`,
-      verify_jwt_token: `${BASE_URL_API}/v1/user/verify-token`,
-      verify_email: `${BASE_URL_API}/v1/user/verify-email`,
-      google_login: `${BASE_URL_API}/v1/user/google`,
+      user_login: `${BASE_URL_API}/v1/auth/login`,
+      user_signup: `${BASE_URL_API}/v1/auth/signup`,
+      verify_jwt_token: `${BASE_URL_API}/v1/auth/verify-token`,
+      verify_email: `${BASE_URL_API}/v1/auth/verify-email`,
+      google_login: `${BASE_URL_API}/v1/auth/google`,
     },
   });
 });
